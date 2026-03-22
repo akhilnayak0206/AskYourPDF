@@ -14,4 +14,28 @@ dependencies = [
     "qdrant-client>=1.17.1",
     "streamlit>=1.55.0",
     "uvicorn>=0.42.0",
+    "sentence-transformers>=3.0.0",
 ]
+
+[dependency-groups]
+dev = [
+    "black>=26.3.1",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
