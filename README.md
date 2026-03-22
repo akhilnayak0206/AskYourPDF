@@ -176,7 +176,7 @@ The frontend will be available at `http://localhost:8501`
 - **Step 6**: Real-time workflow monitoring via Inngest dashboard
 - **Performance**: Sub-second response times with comprehensive logging
 
-### 🧠 Technical Implementation Highlights
+### Technical Implementation Highlights
 
 **Machine Learning Components:**
 - **Embedding Model**: `all-MiniLM-L6-v2` (384-dimensional vectors)
