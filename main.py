@@ -77,11 +77,57 @@ async def rag_capture_pdf(ctx: inngest.Context):
 async def rag_query_pdf(ctx: inngest.Context):
     def _search(question: str, top_k: int = 5) -> RAGSearchResults:
         vec = embed_text([question])[0]
-        results = QdrantStorage().search(vec, limit=top_k)
-        return RAGSearchResults(results=results)
+        results = QdrantStorage().search(vec, top_k)
+        return RAGSearchResults(
+            contexts=results["contexts"], sources=results["sources"]
+        )
+
+    question = ctx.event.data.get("question")
+    top_k = ctx.event.data.get("top_k", 5)
+
+    found = await ctx.step.run(
+        "embed-and-search",
+        lambda: _search(question, top_k),
+        output_type=RAGSearchResults,
+    )
+
+    context_block = "\n\n".join(f"- {c}" for c in found.contexts)
+    user_content = (
+        "Use the following context to answer the question.\n\n"
+        f"Context:\n{context_block}\n\n"
+        f"Question: {question}\n"
+        "Answer concisely using the context above."
+    )
+
+    adapter = ai.openai.Adapter(
+        base_url="https://api.groq.com/openai/v1",
+        auth_key=os.getenv("OPENAI_API_KEY"),
+        model="openai/gpt-oss-120b",
+    )
+
+    response = await ctx.step.ai.infer(
+        "llm-answer",
+        adapter=adapter,
+        body={
+            "max_tokens": 1024,
+            "temperature": 0.2,
+            "messages": [
+                {"role": "system", "content": "You provide answers based on the given context."},
+                {"role": "user", "content": user_content},
+            ],
+        },
+    )
+
+    answer = response["choices"][0]["message"]["content"]
+
+    return {
+        "answer": answer,
+        "sources": found.sources,
+        "num_contexts": len(found.contexts),
+    }
 
 
 app = FastAPI()
 
 
-inngest.fast_api.serve(app, inngest_client, [rag_capture_pdf])
+inngest.fast_api.serve(app, inngest_client, [rag_capture_pdf, rag_query_pdf])
