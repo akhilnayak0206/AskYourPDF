@@ -191,7 +191,7 @@ The frontend will be available at `http://localhost:8501`
 - **API Integration**: Groq/OpenAI for LLM inference
 - **Real-time Monitoring**: Comprehensive logging and workflow visualization
 
-## �� Technical Details
+## Technical Details
 
 ### Embedding Model
 
